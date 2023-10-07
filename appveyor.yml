@@ -13,7 +13,10 @@ environment:
       target: x86_64-pc-windows-msvc
 
 cache:
-  - src-tauri/.cargo -> rust-%channel%-date, cargo-%channel%-build
+  - %USERPROFILE%\.cargo\registry
+  - src-tauri\target
+
+  - src-tauri/target/release/build -> rust-%channel%-date, cargo-%channel%-build
 
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
@@ -29,16 +32,16 @@ build_script:
 test: off
 
 artifacts:
-  - path: nsis\crmbar-tauri*setup.exe
+  - path: src-tauri\target\release\bundle\nsis\crmbar-tauri*setup.exe
     name: Setup
 
-  - path: nsis\crmbar-tauri*setup.nsis*
+  - path: src-tauri\target\release\bundle\nsis\crmbar-tauri*setup.nsis*
     name: Setup-zip
 
-  - path: msi\crmbar-tauri*.msi
+  - path: src-tauri\target\release\bundle\msi\crmbar-tauri*.msi
     name: Setup-msi
 
-  - path: msi\crmbar-tauri*.msi*
+  - path: src-tauri\target\release\bundle\msi\crmbar-tauri*.msi*
     name: Setup-msi-zip
 
  
