@@ -12,6 +12,9 @@ environment:
     - channel: stable
       target: x86_64-pc-windows-msvc
 
+cache:
+  - .cargo -> rust-%channel%-date, cargo-%channel%-build
+
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init -yv --default-toolchain %channel% --default-host %target%
@@ -21,10 +24,13 @@ install:
   - cargo install tauri-cli
 
 build_script:
-  - cargo tauri build 
+  - cargo tauri build
 
 test: off
 
 artifacts:
-  - path: dist\crmbar-tauri*Setup*.exe
+  - path: dist\crmbar-tauri*setup*.exe
     name: Setup
+
+  - path: dist\crmbar-tauri*setup*.msi
+    name: Setup-msi
