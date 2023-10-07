@@ -29,22 +29,16 @@ build_script:
 test: off
 
 artifacts:
-  - path: dist\crmbar-tauri*setup.exe
+  - path: nsis\crmbar-tauri*setup.exe
     name: Setup
 
-  - path: dist\crmbar-tauri*.msi
+  - path: nsis\crmbar-tauri*setup.nsis*
+    name: Setup-zip
+
+  - path: msi\crmbar-tauri*.msi
     name: Setup-msi
 
-  - path: dist\crmbar-tauri*.nsis.zip
-    name: Setup-nsis-zip
-
-  - path: dist\crmbar-tauri*.msi.zip
+  - path: msi\crmbar-tauri*.msi*
     name: Setup-msi-zip
-
-  - path: dist\crmbar-tauri*.nsis.zip.sig
-    name: Setup-nsis-zip-sig
-
-  - path: dist\crmbar-tauri*.msi.zip.sig
-    name: Setup-msi-zip-sig
 
  
