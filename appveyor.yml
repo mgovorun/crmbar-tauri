@@ -13,7 +13,7 @@ environment:
       target: x86_64-pc-windows-msvc
 
 cache:
-  - .cargo -> rust-%channel%-date, cargo-%channel%-build
+  - src-tauri/.cargo -> rust-%channel%-date, cargo-%channel%-build
 
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
