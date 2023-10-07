@@ -16,8 +16,6 @@ cache:
   - %USERPROFILE%\.cargo\registry
   - src-tauri\target
 
-  - src-tauri/target/release/build -> rust-%channel%-date, cargo-%channel%-build
-
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init -yv --default-toolchain %channel% --default-host %target%
