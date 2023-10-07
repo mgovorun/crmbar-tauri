@@ -1,7 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayMenuItem, AppHandle};
+use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayMenuItem, AppHandle, SystemTrayEvent};
+use tauri::async_runtime;
 use std::{time, thread, io, time::Duration};
 use std::str::from_utf8;
 use serialport::{available_ports, SerialPortType, SerialPortInfo};
@@ -25,16 +26,28 @@ fn main() {
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(quit);
     let system_tray = SystemTray::new()
-    .with_menu(tray_menu);
+        .with_menu(tray_menu);
+//    let mut join_handle: JoinHandle<()>;
     tauri::Builder::default()
 //        .invoke_handler(tauri::generate_handler![greet])
         .system_tray(system_tray)
         .setup(|app| {
             let app_handle = app.handle();
-            tauri::async_runtime::spawn(async move {
+            async_runtime::spawn(async move {
                 process_serial(&app_handle);
             });
             Ok(())
+        })
+        .on_system_tray_event(|_app, event| match event {
+            SystemTrayEvent::MenuItemClick { id, .. } => {
+                match id.as_str() {
+                    "quit" => {
+                        std::process::exit(0);
+                    },
+                    _ => {}
+                }
+            }
+            _ => {}
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -72,7 +85,7 @@ fn process_serial(app_handle: &AppHandle) {
                                     .appname("rcrmbar")
                                     .timeout(3)
                                     .show();
-                                app_handle.tray_handle().get_item("scanner").set_title(product);
+                                let _ = app_handle.tray_handle().get_item("scanner").set_title(product);
                             }
                             scanner_connected = true;
                             let mut serial_buf: Vec<u8> = vec![0; 1000];
@@ -138,7 +151,7 @@ fn process_serial(app_handle: &AppHandle) {
                         .appname("rcrmbar")
                         .timeout(2)
                         .show();
-                    app_handle.tray_handle().get_item("scanner").set_title("Сканнер не подключён");
+                    let _ = app_handle.tray_handle().get_item("scanner").set_title("Сканнер не подключён");
                 }
 
                 let sec = time::Duration::from_millis(2000);
