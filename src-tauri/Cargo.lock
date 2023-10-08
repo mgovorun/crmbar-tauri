@@ -588,7 +588,7 @@ dependencies = [
 
 [[package]]
 name = "crmbar-tauri"
-version = "0.0.16"
+version = "0.0.13"
 dependencies = [
  "hex",
  "notify-rust",
