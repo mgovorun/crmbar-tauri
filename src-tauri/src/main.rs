@@ -1,8 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayMenuItem, AppHandle, SystemTrayEvent};
-use tauri::async_runtime;
+use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayMenuItem, AppHandle, SystemTrayEvent, RunEvent, async_runtime, updater};
+//use tauri::async_runtime;
+//use tauri::updater;
 use std::{time, thread, io, time::Duration};
 use std::str::from_utf8;
 use serialport::{available_ports, SerialPortType, SerialPortInfo};
@@ -17,7 +18,8 @@ use open;
 // }
 
 fn main() {
-    let version = CustomMenuItem::new("version".to_string(), "crmbar-tauri 1.0.0").disabled();
+    
+    let version = CustomMenuItem::new("version".to_string(), "crmbar-tauri").disabled();
     let scanner = CustomMenuItem::new("scanner".to_string(), "сканер не подключён").disabled();
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
     let tray_menu = SystemTrayMenu::new() // insert the menu items here
@@ -28,13 +30,32 @@ fn main() {
     let system_tray = SystemTray::new()
         .with_menu(tray_menu);
 //    let mut join_handle: JoinHandle<()>;
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
 //        .invoke_handler(tauri::generate_handler![greet])
         .system_tray(system_tray)
         .setup(|app| {
             let app_handle = app.handle();
+            app.tray_handle().get_item("version").set_title(format!("{} {}",app.package_info().name,app.package_info().version)).unwrap();
+//            let app_handle_2 = app_handle.clone();
             async_runtime::spawn(async move {
-                process_serial(&app_handle);
+                process_serial(app_handle);
+            });
+            let handle = app.handle();
+            async_runtime::spawn(async move {
+                loop {
+                    let min15 = time::Duration::from_millis(1000*60*5);
+                    thread::sleep(min15);
+                    match updater::builder(handle.clone()).check().await {
+                        Ok(_update) => {
+                            // if update.is_update_available() {
+                            //     update.download_and_install().await.unwrap();
+                            // }
+                        }
+                        Err(_e) => {
+//                            println!("failed to get update: {}", e);
+                        }
+                    }
+                }
             });
             Ok(())
         })
@@ -49,11 +70,50 @@ fn main() {
             }
             _ => {}
         })
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
         .expect("error while running tauri application");
+    
+        app.run(|_app_handle, event| debug_events(event));
 }
 
-fn process_serial(app_handle: &AppHandle) {
+fn debug_events(event: RunEvent) {
+    match event {
+        tauri::RunEvent::Updater(updater_event) => {
+            match updater_event {
+                tauri::UpdaterEvent::UpdateAvailable { body, date, version } => {
+                    println!("update available {} {:?} {}", body, date, version);
+                }
+                // Emitted when the download is about to be started.
+                tauri::UpdaterEvent::Pending => {
+                    println!("update is pending!");
+                }
+                tauri::UpdaterEvent::DownloadProgress { chunk_length, content_length } => {
+                    println!("downloaded {} of {:?}", chunk_length, content_length);
+                }
+                // Emitted when the download has finished and the update is about to be installed.
+                tauri::UpdaterEvent::Downloaded => {
+                    println!("update has been downloaded!");
+                }
+                // Emitted when the update was installed. You can then ask to restart the app.
+                tauri::UpdaterEvent::Updated => {
+                    println!("app has been updated");
+                }
+                // Emitted when the app already has the latest version installed and an update is not needed.
+                tauri::UpdaterEvent::AlreadyUpToDate => {
+                    println!("app is already up to date");
+                }
+                // Emitted when there is an error with the updater. We suggest to listen to this event even if the default dialog is enabled.
+                tauri::UpdaterEvent::Error(error) => {
+                    println!("failed to update: {}", error);
+                }
+//                _ => (),
+            }
+        }
+        _ => {}
+    }
+}
+
+fn process_serial(app_handle: AppHandle) {
     let host = "https://crm.fsfera.ru/set";
     let baud_rate: u32 = 115200;
     let mut scanner_connected: bool = false;
