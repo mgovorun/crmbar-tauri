@@ -14,7 +14,7 @@ environment:
 
 cache:
   - C:\Users\appveyor\.cargo\registry
-  - src-tauri\target\build
+  - src-tauri\target\release\build
 
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
