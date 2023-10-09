@@ -42,4 +42,6 @@ artifacts:
   - path: src-tauri\target\release\bundle\msi\crmbar-tauri*.msi*
     name: Setup-msi-zip
 
- 
+deploy:
+  provider: Environment
+  name: GitHub Releases crmbar-tauri
