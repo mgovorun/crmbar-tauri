@@ -1,6 +1,6 @@
 [package]
 name = "crmbar-tauri"
-version = "0.0.20"
+version = "0.0.21"
 description = "FS Barcode scanner software"
 authors = ["Mikhail Govorun"]
 license = ""
