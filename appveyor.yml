@@ -6,11 +6,7 @@ platform:
 init:
   - git config --global core.autocrlf input
 
-environment:
-  matrix:
-
-    - channel: stable
-      target: x86_64-pc-windows-msvc
+skip_non_tags: true
 
 cache:
   - C:\Users\appveyor\.cargo\registry
